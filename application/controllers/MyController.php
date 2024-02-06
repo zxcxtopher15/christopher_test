@@ -8,6 +8,7 @@ class MyController extends CI_Controller
         parent::__construct();
         $this->load->model('MyModel');
         $this->load->helper('security');
+        $this->load->library('cipher');
     }
 
     public function index()
@@ -57,7 +58,7 @@ class MyController extends CI_Controller
                 'password' => $hashed_password,
             );
             $data = $this->security->xss_clean($data);
-            
+
             $user_id = $this->MyModel->insert_user($data);
 
             if ($user_id) {
@@ -114,5 +115,14 @@ class MyController extends CI_Controller
         $result = $this->MyModel->update_user($user_id, $username, $email);
 
         echo json_encode(['success' => $result]);
+    }
+
+    public function encrypt_user_id()
+    {
+        $user_id = $this->input->post('id');
+
+        $encrypted_user_id = $this->cipher->encrypt($user_id);
+
+        echo $encrypted_user_id;
     }
 }

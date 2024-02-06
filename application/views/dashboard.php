@@ -62,7 +62,7 @@ if (!$this->session->userdata('logged_in')) {
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="editModalLabel">Edit User</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="urlReset()" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="editForm">
@@ -122,12 +122,32 @@ if (!$this->session->userdata('logged_in')) {
         }
 
         function openEditModal(userId, username, email) {
-            $('#editUserId').val(userId);
-            $('#editUsername').val(username);
-            $('#editEmail').val(email);
+            $.ajax({
+                type: 'POST',
+                url: "<?= base_url('mycontroller/encrypt_user_id'); ?>",
+                data: {
+                    id: userId
+                },
+                success: function(encryptedUserId) {
+                    $('#editUserId').val(encryptedUserId);
 
-            $('#editModal').modal('show');
+                    var newUrl = window.location.href.split('?')[0] + '?id=' + encryptedUserId;
+                    window.history.pushState({
+                        path: newUrl
+                    }, '', newUrl);
+
+                    $('#editUserId').val(userId);
+                    $('#editUsername').val(username);
+                    $('#editEmail').val(email);
+
+                    $('#editModal').modal('show');
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error encrypting user ID:', error);
+                }
+            });
         }
+
 
         function updateUser() {
             var userId = $('#editUserId').val();
@@ -147,6 +167,7 @@ if (!$this->session->userdata('logged_in')) {
                     var data = JSON.parse(response);
 
                     if (data.success) {
+                        urlReset();
                         location.reload();
                     } else {
                         alert('Username or email already exists!');
@@ -156,6 +177,10 @@ if (!$this->session->userdata('logged_in')) {
                     console.log("Update request failed");
                 }
             });
+        }
+
+        function urlReset() {
+            window.history.replaceState({}, document.title, window.location.pathname);
         }
     </script>
 </body>

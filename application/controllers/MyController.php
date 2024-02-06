@@ -7,6 +7,7 @@ class MyController extends CI_Controller
     {
         parent::__construct();
         $this->load->model('MyModel');
+        $this->load->helper('security');
     }
 
     public function index()
@@ -55,7 +56,8 @@ class MyController extends CI_Controller
                 'email' => $email,
                 'password' => $hashed_password,
             );
-
+            $data = $this->security->xss_clean($data);
+            
             $user_id = $this->MyModel->insert_user($data);
 
             if ($user_id) {
